@@ -1,11 +1,10 @@
-package uk.co.novinet.scraper;
+package uk.co.novinet.scraper.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 @Data

@@ -1,4 +1,4 @@
-package uk.co.novinet.scraper;
+package uk.co.novinet.scraper.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,0 +1,58 @@
+.dropzone {
+    border-style: dashed;
+}
+
+input.invalid {
+    background-color: #f99;
+    color: #fff;
+}
+
+#message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+#inner-message {
+    margin: 0 auto;
+}
+
+@media only screen and (max-width: 768px) {
+    .field-info-panel {
+        margin-top: 15px;
+    }
+}
+
+/**
+ * The CSS shown here will not be introduced in the Quickstart guide, but shows
+ * how you can use CSS to style your Element's container.
+ */
+.StripeElement {
+  background-color: white;
+  height: 40px;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+}
+
+.StripeElement--focus {
+  border-color: #66afe9;
+  outline: 0;
+}
+
+div.card-errors {
+    font-style: italic;
+    color: #a94442;
+}
+
+.StripeElement--invalid {
+  border-color: #fa755a;
+}
+
+.StripeElement--webkit-autofill {
+  background-color: #fefde5 !important;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+}

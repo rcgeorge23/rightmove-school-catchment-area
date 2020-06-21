@@ -1,12 +1,13 @@
 package uk.co.novinet.scraper;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.stereotype.Service;
+import uk.co.novinet.scraper.dto.Location;
+import uk.co.novinet.scraper.dto.PropertyInfo;
+import uk.co.novinet.scraper.dto.SearchParameters;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,7 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class Scraper {
+@Service
+public class RightMoveSearchService {
 
     private static final float GRAVENEY_LATITUDE = 51.4234f;
     private static final float GRAVENEY_LONGITUDE = 0.1520f;
@@ -23,48 +25,44 @@ public class Scraper {
     private static final float TOOTING_COMMON_LATITUDE = 51.427999F;
     private static final float TOOTING_COMMON_LONGITUDE = 0.148449f;
 
-    private static final int MIN_PRICE = 650000;
-    private static final int MAX_PRICE = 1250000;
-    private static final int MIN_BEDROOMS = 3;
-
     private static final String BASE_URL = "https://www.rightmove.co.uk";
+
     private static final DateTimeFormatter RIGHTMOVE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMMM yyyy");
 
     private static final Pattern PATTERN_LOCATION = Pattern.compile("\\/\\/media.rightmove.co.uk\\/map\\/_generate\\?latitude=(?<latitude>[-+]?[0-9]*\\.?[0-9]+)\\&longitude=(?<longitude>[-+]?[0-9]*\\.?[0-9]+)");
 
-    public static void main(String[] args) throws IOException {
-        List<PropertyInfo> propertyInfos = findPropertyPageLinks().stream().map(Scraper::findPropertyInfo).filter(propertyInfo ->
-                propertyInfo.getDistanceToGraveneySchoolMeters() < 500).sorted((propertyInfo1, propertyInfo2) -> propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded())).collect(Collectors.toList());
-
-        try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(System.out), CSVFormat.DEFAULT
-                .withHeader(
-                        "Address",
-                        "Description",
-                        "Price",
-                        "Distance to Graveney School (m)",
-                        "Distance to Tooting Common (m)",
-                        "Date added to rightmove",
-                        "Link"))) {
-            propertyInfos.forEach(propertyInfo -> {
-                try {
-                    printer.printRecord(
-                            propertyInfo.getAddress(),
-                            propertyInfo.getDescription(),
-                            propertyInfo.getPrice(),
-                            propertyInfo.getDistanceToGraveneySchoolMeters(),
-                            propertyInfo.getDistanceToTootingCommonMeters(),
-                            propertyInfo.getDateAdded(),
-                            propertyInfo.getUri()
-                    );
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                };
-            });
-        }
+    public List<PropertyInfo> search(SearchParameters searchParameters) throws IOException {
+        return findPropertyPageLinks(searchParameters).stream().map(RightMoveSearchService::findPropertyInfo).filter(propertyInfo ->
+                propertyInfo.getDistanceToGraveneySchoolMeters() < searchParameters.getMaximumDistanceToGraveneySchool()).sorted((propertyInfo1, propertyInfo2) -> propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded())).collect(Collectors.toList());
+//        try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(System.out), CSVFormat.DEFAULT
+//                .withHeader(
+//                        "Address",
+//                        "Description",
+//                        "Price",
+//                        "Distance to Graveney School (m)",
+//                        "Distance to Tooting Common (m)",
+//                        "Date added to rightmove",
+//                        "Link"))) {
+//            propertyInfos.forEach(propertyInfo -> {
+//                try {
+//                    printer.printRecord(
+//                            propertyInfo.getAddress(),
+//                            propertyInfo.getDescription(),
+//                            propertyInfo.getPrice(),
+//                            propertyInfo.getDistanceToGraveneySchoolMeters(),
+//                            propertyInfo.getDistanceToTootingCommonMeters(),
+//                            propertyInfo.getDateAdded(),
+//                            propertyInfo.getUri()
+//                    );
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                };
+//            });
+//        }
     }
 
-    private static List<URI> findPropertyPageLinks() throws IOException {
-        Document doc = Jsoup.connect(BASE_URL + "/property-for-sale/find.html?searchType=SALE&locationIdentifier=REGION%5E70343&insId=1&radius=0.0&minPrice=" + MIN_PRICE + "&maxPrice=" + MAX_PRICE + "&minBedrooms=" + MIN_BEDROOMS + "&maxBedrooms=&displayPropertyType=houses&maxDaysSinceAdded=&_includeSSTC=on&sortByPriceDescending=&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&newHome=&auction=false").get();
+    private static List<URI> findPropertyPageLinks(SearchParameters searchParameters) throws IOException {
+        Document doc = Jsoup.connect(BASE_URL + "/property-for-sale/find.html?searchType=SALE&locationIdentifier=REGION%5E70343&insId=1&radius=0.0&minPrice=" + searchParameters.getMinimumPrice() + "&maxPrice=" + searchParameters.getMaximumPrice() + "&minBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&maxBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&displayPropertyType=houses&maxDaysSinceAdded=&_includeSSTC=on&sortByPriceDescending=&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&newHome=&auction=false").get();
         return doc.select(".propertyCard-link").stream().filter(element -> !"".equals(element.attr("href").trim())).map(element -> URI.create(BASE_URL + element.attr("href"))).distinct().collect(Collectors.toList());
     }
 
