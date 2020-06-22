@@ -1,7 +1,5 @@
 package uk.co.novinet.scraper;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
@@ -10,7 +8,6 @@ import uk.co.novinet.scraper.dto.PropertyInfo;
 import uk.co.novinet.scraper.dto.SearchParameters;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -33,6 +30,7 @@ public class RightMoveSearchService {
     private static final DateTimeFormatter RIGHTMOVE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMMM yyyy");
 
     private static final Pattern PATTERN_LOCATION = Pattern.compile("\\/\\/media.rightmove.co.uk\\/map\\/_generate\\?latitude=(?<latitude>[-+]?[0-9]*\\.?[0-9]+)\\&longitude=(?<longitude>[-+]?[0-9]*\\.?[0-9]+)");
+    public static final String USER_AGENT = "furzedown-graveney-catchment-area-search / 0.1";
 
 //    public static void main(String[] args) throws IOException {
 //        SearchParameters searchParameters = new SearchParameters(500, 1250000, 650000, 3, 7);
@@ -98,13 +96,13 @@ public class RightMoveSearchService {
     }
 
     private static List<URI> findPropertyPageLinks(SearchParameters searchParameters) throws IOException {
-        Document doc = Jsoup.connect(BASE_URL + "/property-for-sale/find.html?searchType=SALE&locationIdentifier=REGION%5E70343&insId=1&radius=0.0&minPrice=" + searchParameters.getMinimumPrice() + "&maxPrice=" + searchParameters.getMaximumPrice() + "&minBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&maxBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&displayPropertyType=houses&maxDaysSinceAdded=&_includeSSTC=on&sortByPriceDescending=&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&newHome=&auction=false").get();
+        Document doc = Jsoup.connect(BASE_URL + "/property-for-sale/find.html?searchType=SALE&locationIdentifier=REGION%5E70343&insId=1&radius=0.0&minPrice=" + searchParameters.getMinimumPrice() + "&maxPrice=" + searchParameters.getMaximumPrice() + "&minBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&maxBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&displayPropertyType=houses&maxDaysSinceAdded=&_includeSSTC=on&sortByPriceDescending=&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&newHome=&auction=false").userAgent(USER_AGENT).get();
         return doc.select(".propertyCard-link").stream().filter(element -> !"".equals(element.attr("href").trim())).map(element -> URI.create(BASE_URL + element.attr("href"))).distinct().collect(Collectors.toList());
     }
 
     private static PropertyInfo findPropertyInfo(URI propertyPageUri) {
         try {
-            Document propertyInfoPage = Jsoup.connect(propertyPageUri.toString()).get();
+            Document propertyInfoPage = Jsoup.connect(propertyPageUri.toString()).userAgent(USER_AGENT).get();
 
             Location location = propertyInfoPage.select("img[alt=\"Get map and local information\"]").stream().map(element -> {
                 Matcher matcher = PATTERN_LOCATION.matcher(element.attr("src"));
