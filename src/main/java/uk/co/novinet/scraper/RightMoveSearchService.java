@@ -32,67 +32,9 @@ public class RightMoveSearchService {
     private static final Pattern PATTERN_LOCATION = Pattern.compile("\\/\\/media.rightmove.co.uk\\/map\\/_generate\\?latitude=(?<latitude>[-+]?[0-9]*\\.?[0-9]+)\\&longitude=(?<longitude>[-+]?[0-9]*\\.?[0-9]+)");
     public static final String USER_AGENT = "furzedown-graveney-catchment-area-search / 0.1";
 
-//    public static void main(String[] args) throws IOException {
-//        SearchParameters searchParameters = new SearchParameters(500, 1250000, 650000, 3, 7);
-//        List<PropertyInfo> propertyInfos = findPropertyPageLinks(searchParameters).stream().map(RightMoveSearchService::findPropertyInfo).filter(propertyInfo ->
-//                propertyInfo.getDistanceToGraveneySchoolMeters() < searchParameters.getMaximumDistanceToGraveneySchool()).sorted((propertyInfo1, propertyInfo2) -> propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded())).collect(Collectors.toList());
-//
-//        try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(System.out), CSVFormat.DEFAULT
-//                .withHeader(
-//                        "Address",
-//                        "Description",
-//                        "Price",
-//                        "Distance to Graveney School (m)",
-//                        "Distance to Tooting Common (m)",
-//                        "Date added to rightmove",
-//                        "Link"))) {
-//            propertyInfos.forEach(propertyInfo -> {
-//                try {
-//                    printer.printRecord(
-//                            propertyInfo.getAddress(),
-//                            propertyInfo.getDescription(),
-//                            propertyInfo.getPrice(),
-//                            propertyInfo.getDistanceToGraveneySchoolMeters(),
-//                            propertyInfo.getDistanceToTootingCommonMeters(),
-//                            propertyInfo.getDateAdded(),
-//                            propertyInfo.getUri()
-//                    );
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//                ;
-//            });
-//        }
-//    }
-
     public List<PropertyInfo> search(SearchParameters searchParameters) throws IOException {
         return findPropertyPageLinks(searchParameters).stream().map(RightMoveSearchService::findPropertyInfo).filter(propertyInfo ->
                 propertyInfo.getDistanceToGraveneySchoolMeters() < searchParameters.getMaximumDistanceToGraveneySchool()).sorted((propertyInfo1, propertyInfo2) -> propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded())).collect(Collectors.toList());
-//        try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(System.out), CSVFormat.DEFAULT
-//                .withHeader(
-//                        "Address",
-//                        "Description",
-//                        "Price",
-//                        "Distance to Graveney School (m)",
-//                        "Distance to Tooting Common (m)",
-//                        "Date added to rightmove",
-//                        "Link"))) {
-//            propertyInfos.forEach(propertyInfo -> {
-//                try {
-//                    printer.printRecord(
-//                            propertyInfo.getAddress(),
-//                            propertyInfo.getDescription(),
-//                            propertyInfo.getPrice(),
-//                            propertyInfo.getDistanceToGraveneySchoolMeters(),
-//                            propertyInfo.getDistanceToTootingCommonMeters(),
-//                            propertyInfo.getDateAdded(),
-//                            propertyInfo.getUri()
-//                    );
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                };
-//            });
-//        }
     }
 
     private static List<URI> findPropertyPageLinks(SearchParameters searchParameters) throws IOException {
