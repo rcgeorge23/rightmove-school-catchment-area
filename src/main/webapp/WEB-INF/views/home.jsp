@@ -14,11 +14,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/additional-methods.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+    <script src="https:////cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/free-jqgrid/4.15.4/css/ui.jqgrid.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/free-jqgrid/4.15.4/jquery.jqgrid.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/free-jqgrid/4.15.4/i18n/grid.locale-en.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
-    <script src="https:////cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <link rel="stylesheet" href="/css/lcag.css">
     <script src="/js/lcag-common.js"></script>
@@ -95,63 +95,11 @@
                                 </div>
                             </div>
                         </form>
-                        <div class="panel panel-default">
-                            <div class="panel-heading">Results</div>
-                            <div class="panel-body">
-                                <div class="horizontal-scroll">
-                                    <table id="results-grid">
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </body>
-    <script>
-        $(function() {
-            $("#results-grid").jqGrid({
-                colModel: [
-                    { name: "price", label: "Price", width: 150, template: "string" },
-                    { name: "address", label: "Address", width: 150, template: "string" },
-                    { name: "description", label: "Description", width: 150, template: "string" },
-                    { name: "distanceToGraveneySchoolMeters", label: "Distance to Graveney School (m)", width: 150, template: "string" },
-                    { name: "distanceToTootingCommonMeters", label: "Distance to Tooting Common (m)", width: 150, template: "string" },
-                    { name: "dateAdded", label: "Date added to RightMove", width: 150, template: "string" },
-                    { name: "uri", label: "Link", width: 350, formatter: linkFormatter }
-                ],
-                iconSet: "fontAwesome",
-                sortname: "id",
-                sortorder: "desc",
-                threeStateSort: false,
-                headertitles: true,
-                rowNum: 10,
-                width: "2000px",
-                altRows: true,
-                viewrecords: true
-            }).jqGrid("filterToolbar", {
-                searchOnEnter: false
-            });
-
-            function linkFormatter(cellValue, options, rowObject) {
-                return '<a href="' + cellValue + '">' + cellValue + '</a>';
-            }
-
-            $('#search-form').ajaxForm(function(data) {
-                console.log(data, data);
-                $("#results-grid")
-                    .jqGrid('setGridParam', { datatype: 'local', data: data })
-                    .trigger("reloadGrid");
-            });
-
-            $(document).ajaxStart(function() {
-                lcag.Common.alertPleaseWait();
-            }).ajaxStop(function() {
-                lcag.Common.hidePleaseWait();
-            });
-        });
-    </script>
 </html>
 
 
