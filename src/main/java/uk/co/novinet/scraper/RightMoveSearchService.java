@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 @Service
 public class RightMoveSearchService {
 
-    private static final float GRAVENEY_LATITUDE = 51.4234f;
-    private static final float GRAVENEY_LONGITUDE = 0.1520f;
+    private static final float GRAVENEY_LATITUDE = 51.4233841f;
+    private static final float GRAVENEY_LONGITUDE = -0.1520402f;
 
     private static final float TOOTING_COMMON_LATITUDE = 51.427999F;
-    private static final float TOOTING_COMMON_LONGITUDE = 0.148449f;
+    private static final float TOOTING_COMMON_LONGITUDE = -0.148449f;
 
     private static final String BASE_URL = "https://www.rightmove.co.uk";
 
@@ -51,7 +51,7 @@ public class RightMoveSearchService {
                 if (matcher.find()) {
                     return new Location(
                             Float.parseFloat(matcher.group("latitude")),
-                            Math.abs(Float.parseFloat(matcher.group("longitude")))
+                            Float.parseFloat(matcher.group("longitude"))
                     );
                 }
                 throw new IllegalArgumentException("Not found");
@@ -95,6 +95,6 @@ public class RightMoveSearchService {
                 Math.cos(Math.toRadians(latitude1)) * Math.cos(Math.toRadians(latitude2)) *
                         Math.sin(deltaLongitude / 2) * Math.sin(deltaLongitude / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return (float) (earthRadius * c);
+        return (float) Math.abs(earthRadius * c);
     }
 }

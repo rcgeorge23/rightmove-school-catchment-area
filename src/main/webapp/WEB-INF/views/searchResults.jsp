@@ -67,7 +67,8 @@
                                             <td><a href="${item.uri}">${item.uri}</a></td>
                                         </tr>
                                         <tr>
-                                            <td colspan="7"><iframe src="${item.uri}" style="width:100%; height: 800px;"></iframe></td>
+                                            <td></td>
+                                            <td colspan="6"><iframe src="${item.uri}" style="width:100%; height: 800px;"></iframe></td>
                                         </tr>
                                     </c:forEach>
                                     </tbody>
