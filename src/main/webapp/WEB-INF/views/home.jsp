@@ -23,14 +23,17 @@
     <link rel="stylesheet" href="/css/lcag.css">
     <script src="/js/lcag-common.js"></script>
 
-    <title>Right Move Graveney School Catchment Area Search</title>
+    <title>Graveney School Catchment Area Search</title>
 </head>
     <body>
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a href="#" class="navbar-brand">
-                        <img alt="Brand" src="/images/rightmove.png" width="60">
+                        <span>
+                            <img alt="Brand" src="/images/rightmove.png" width="60">
+                            <img alt="Brand" src="/images/zoopla.png" width="60">
+                        </span>
                     </a>
                 </div>
             </div>
