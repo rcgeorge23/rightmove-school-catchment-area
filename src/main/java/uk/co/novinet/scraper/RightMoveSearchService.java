@@ -33,12 +33,14 @@ public class RightMoveSearchService {
     public static final String USER_AGENT = "furzedown-graveney-catchment-area-search / 0.1";
 
     public List<PropertyInfo> search(SearchParameters searchParameters) throws IOException {
-        return findPropertyPageLinks(searchParameters).stream().map(RightMoveSearchService::findPropertyInfo).filter(propertyInfo ->
+        List<URI> propertyPageLinks = findPropertyPageLinks(searchParameters);
+        return propertyPageLinks.stream().map(RightMoveSearchService::findPropertyInfo).filter(propertyInfo ->
                 propertyInfo.getDistanceToGraveneySchoolMeters() < searchParameters.getMaximumDistanceToGraveneySchool()).sorted((propertyInfo1, propertyInfo2) -> propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded())).collect(Collectors.toList());
     }
 
     private static List<URI> findPropertyPageLinks(SearchParameters searchParameters) throws IOException {
-        Document doc = Jsoup.connect(BASE_URL + "/property-for-sale/find.html?searchType=SALE&locationIdentifier=REGION%5E70343&insId=1&radius=0.0&minPrice=" + searchParameters.getMinimumPrice() + "&maxPrice=" + searchParameters.getMaximumPrice() + "&minBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&maxBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&displayPropertyType=houses&maxDaysSinceAdded=&_includeSSTC=on&sortByPriceDescending=&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&newHome=&auction=false").userAgent(USER_AGENT).get();
+        String url = BASE_URL + "/property-for-sale/find.html?searchType=SALE&locationIdentifier=REGION%5E70343&insId=1&radius=0.0&minPrice=" + searchParameters.getMinimumPrice() + "&maxPrice=" + searchParameters.getMaximumPrice() + "&minBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&maxBedrooms=" + searchParameters.getMaximumNumberOfBedrooms() + "&displayPropertyType=houses&maxDaysSinceAdded=&_includeSSTC=on&sortByPriceDescending=&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&newHome=&auction=false";
+        Document doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
         return doc.select(".propertyCard-link").stream().filter(element -> !"".equals(element.attr("href").trim())).map(element -> URI.create(BASE_URL + element.attr("href"))).distinct().collect(Collectors.toList());
     }
 
@@ -96,5 +98,9 @@ public class RightMoveSearchService {
                         Math.sin(deltaLongitude / 2) * Math.sin(deltaLongitude / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return (float) Math.abs(earthRadius * c);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(distanceBetween(GRAVENEY_LATITUDE, GRAVENEY_LONGITUDE, 51.426609f, -0.148665f));
     }
 }
