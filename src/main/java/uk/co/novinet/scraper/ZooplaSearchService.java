@@ -2,6 +2,8 @@ package uk.co.novinet.scraper;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import uk.co.novinet.scraper.dto.Location;
 import uk.co.novinet.scraper.dto.PropertyInfo;
@@ -17,13 +19,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class RightMoveSearchService implements SearchService {
+public class ZooplaSearchService implements SearchService {
 
-    private static final String BASE_URL = "https://www.rightmove.co.uk";
+    private static final String BASE_URL = "https://www.zoopla.co.uk";
 
-    private static final DateTimeFormatter RIGHTMOVE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+    private static final DateTimeFormatter ZOOPLA_DATE_FORMAT = DateTimeFormatter.ofPattern("d MMM yyyy");
 
-    private static final Pattern PATTERN_LOCATION = Pattern.compile("\\/\\/media.rightmove.co.uk\\/map\\/_generate\\?latitude=(?<latitude>[-+]?[0-9]*\\.?[0-9]+)\\&longitude=(?<longitude>[-+]?[0-9]*\\.?[0-9]+)");
+    private static final Pattern PATTERN_LOCATION = Pattern.compile("\"coordinates\": \\{\"is_approximate\":false,\"latitude\":(?<latitude>[-+]?[0-9]*\\.?[0-9]+),\"longitude\":(?<longitude>[-+]?[0-9]*\\.?[0-9]+)\\}");
 
     public List<PropertyInfo> search(SearchParameters searchParameters) throws IOException {
         List<URI> propertyPageLinks = findPropertyPageLinks(searchParameters);
@@ -32,50 +34,57 @@ public class RightMoveSearchService implements SearchService {
     }
 
     private static List<URI> findPropertyPageLinks(SearchParameters searchParameters) throws IOException {
-        String url = BASE_URL + "/property-for-sale/find.html?searchType=SALE&locationIdentifier=REGION%5E70343&insId=1&radius=0.0&minPrice=" + searchParameters.getMinimumPrice() + "&maxPrice=" + searchParameters.getMaximumPrice() + "&minBedrooms=" + searchParameters.getMinimumNumberOfBedrooms() + "&maxBedrooms=" + searchParameters.getMaximumNumberOfBedrooms() + "&displayPropertyType=houses&maxDaysSinceAdded=&_includeSSTC=on&sortByPriceDescending=&primaryDisplayPropertyType=&secondaryDisplayPropertyType=&oldDisplayPropertyType=&oldPrimaryDisplayPropertyType=&newHome=&auction=false";
+        String url = BASE_URL + "/for-sale/houses/furzedown/?beds_min=" + searchParameters.getMinimumNumberOfBedrooms() + "&is_retirement_home=false&is_shared_ownership=false&new_homes=exclude&price_max=" + searchParameters.getMaximumPrice() + "&price_min=" + searchParameters.getMinimumPrice() + "&q=Furzedown%2C%20London&results_sort=newest_listings&search_source=home&page_size=50";
         Document doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
-        return doc.select(".propertyCard-link").stream().filter(element -> !"".equals(element.attr("href").trim())).map(element -> URI.create(BASE_URL + element.attr("href"))).distinct().collect(Collectors.toList());
+        List<URI> uris = doc.select("h2.listing-results-attr a").stream().filter(element -> !"".equals(element.attr("href").trim())).map(element -> URI.create(BASE_URL + element.attr("href"))).distinct().collect(Collectors.toList());
+        return uris;
     }
 
     private PropertyInfo findPropertyInfo(URI propertyPageUri) {
         try {
             Document propertyInfoPage = Jsoup.connect(propertyPageUri.toString()).userAgent(USER_AGENT).get();
 
-            Location location = propertyInfoPage.select("img[alt=\"Get map and local information\"]").stream().map(element -> {
-                Matcher matcher = PATTERN_LOCATION.matcher(element.attr("src"));
+            Elements scriptElements = propertyInfoPage.select("script");
+
+            Location location = scriptElements.stream().filter(element -> {
+                return PATTERN_LOCATION.matcher(element.outerHtml()).find();
+            }).map(element -> {
+                Matcher matcher = PATTERN_LOCATION.matcher(element.outerHtml());
                 if (matcher.find()) {
                     return new Location(
                             Float.parseFloat(matcher.group("latitude")),
                             Float.parseFloat(matcher.group("longitude"))
                     );
                 }
+
                 throw new IllegalArgumentException("Not found");
             }).collect(Collectors.toList()).get(0);
 
+            List<TextNode> listingDateTextNodes = propertyInfoPage.select(".dp-price-history__item .dp-price-history__item-date").textNodes();
+
             return new PropertyInfo(
                     location,
-                    propertyInfoPage.select("#propertyHeaderPrice strong").textNodes().get(0).toString().trim(),
-                    propertyInfoPage.select(".property-header-bedroom-and-price .left address").textNodes().get(2).toString().trim().replaceAll("&amp;", "&"),
-                    propertyInfoPage.select("h1.fs-22").textNodes().get(0).toString().trim(),
+                    propertyInfoPage.select("article.dp-sidebar-wrapper__summary .ui-pricing__main-price.ui-text-t4").textNodes().get(0).toString().trim(),
+                    propertyInfoPage.select("article.dp-sidebar-wrapper__summary .ui-property-summary__address").textNodes().get(0).toString().trim().replaceAll("&amp;", "&"),
+                    propertyInfoPage.select("article.dp-sidebar-wrapper__summary .ui-property-summary__title.ui-title-subgroup").textNodes().get(0).toString().trim(),
                     propertyPageUri.toString(),
                     distanceBetween(
                             GRAVENEY_LATITUDE,
                             GRAVENEY_LONGITUDE,
                             location.getLatitude(),
                             location.getLongitude()
-                            ),
+                    ),
                     distanceBetween(
                             TOOTING_COMMON_LATITUDE,
                             TOOTING_COMMON_LONGITUDE,
                             location.getLatitude(),
                             location.getLongitude()
-                            ),
-                    LocalDate.parse(propertyInfoPage.select("#firstListedDateValue").textNodes().get(0).toString().trim(), RIGHTMOVE_DATE_FORMAT)
+                    ),
+                    listingDateTextNodes.isEmpty() ? null : LocalDate.parse(listingDateTextNodes.get(0).toString().trim().replaceAll("(?<=\\d)(st|nd|rd|th)", ""), ZOOPLA_DATE_FORMAT)
 
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
 }
