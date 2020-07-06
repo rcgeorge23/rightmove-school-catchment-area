@@ -84,11 +84,24 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="maximumDistanceToGraveneySchool">Maximum distance to graveney school (m):</label>
+                                        <label for="schoolId">Please select a school:</label>
+                                        <div class="form-group">
+                                            <div class="input-group">
+                                                <div class="input-group-addon"><i class="fa fa-university" aria-hidden="true"></i></div>
+                                                <select name="schoolId" class="form-control" id="school" required>
+                                                    <c:forEach items="${schools}" var="school">
+                                                        <option value="${school.id}">${school.name}</option>
+                                                    </c:forEach>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="maximumDistanceToSchool">Maximum distance to school (m):</label>
                                         <div class="form-group">
                                             <div class="input-group">
                                                 <div class="input-group-addon"><i class="fa fa-road" aria-hidden="true"></i></div>
-                                                <input type="text" name="maximumDistanceToGraveneySchool" class="form-control" id="maximumDistanceToGraveneySchool" placeholder="Please enter the maximum distance to Graveney School in meters" required value="500"/>
+                                                <input type="text" name="maximumDistanceToSchool" class="form-control" id="maximumDistanceToSchool" placeholder="Please enter the maximum distance to school in meters" required value="500"/>
                                             </div>
                                         </div>
                                     </div>

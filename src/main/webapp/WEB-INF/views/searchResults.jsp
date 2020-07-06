@@ -52,7 +52,7 @@
                                             <th>Price</th>
                                             <th>Address</th>
                                             <th>Description</th>
-                                            <th>Distance to Graveney School (m)</th>
+                                            <th>Distance to ${school.name} (m)</th>
                                             <th>Distance to Tooting Common (m)</th>
                                             <th>Date added</th>
                                             <th>Link</th>
@@ -64,7 +64,7 @@
                                             <td>${item.price}</td>
                                             <td>${item.address}</td>
                                             <td>${item.description}</td>
-                                            <td>${item.distanceToGraveneySchoolMeters}</td>
+                                            <td>${item.distanceToSchoolMeters}</td>
                                             <td>${item.distanceToTootingCommonMeters}</td>
                                             <td>${item.dateAdded}</td>
                                             <td><a href="${item.uri}">${item.uri}</a></td>

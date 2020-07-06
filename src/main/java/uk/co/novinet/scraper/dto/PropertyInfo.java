@@ -17,7 +17,7 @@ public class PropertyInfo {
     private String address;
     private String description;
     private String uri;
-    private float distanceToGraveneySchoolMeters;
+    private float distanceToSchoolMeters;
     private float distanceToTootingCommonMeters;
     private LocalDate dateAdded;
 }

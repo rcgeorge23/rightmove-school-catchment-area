@@ -8,9 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SearchParameters {
-    float maximumDistanceToGraveneySchool;
+    float maximumDistanceToSchool;
     Integer maximumPrice;
     Integer minimumPrice;
     Integer minimumNumberOfBedrooms;
     Integer maximumNumberOfBedrooms;
+    long schoolId;
 }

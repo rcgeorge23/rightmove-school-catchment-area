@@ -8,13 +8,10 @@ import java.util.List;
 
 public interface SearchService {
 
-    float GRAVENEY_LATITUDE = 51.4233841f;
-    float GRAVENEY_LONGITUDE = -0.1520402f;
-
     float TOOTING_COMMON_LATITUDE = 51.427999F;
     float TOOTING_COMMON_LONGITUDE = -0.148449f;
 
-    String USER_AGENT = "furzedown-graveney-catchment-area-search / 0.1";
+    String USER_AGENT = "furzedown-catchment-area-search / 0.1";
 
     List<PropertyInfo> search(SearchParameters searchParameters) throws IOException;
 

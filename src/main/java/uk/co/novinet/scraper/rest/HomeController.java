@@ -9,15 +9,22 @@ import org.springframework.web.servlet.ModelAndView;
 import uk.co.novinet.scraper.RightMoveSearchService;
 import uk.co.novinet.scraper.ZooplaSearchService;
 import uk.co.novinet.scraper.dto.PropertyInfo;
+import uk.co.novinet.scraper.dto.School;
 import uk.co.novinet.scraper.dto.SearchParameters;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @Slf4j
 public class HomeController {
+
+    public static final Map<Long, School> SCHOOLS = Map.of(
+            1L, new School(1, "Graveney Secondary School", 51.4233841f, -0.1520402f)
+    );
 
     @Autowired
     private RightMoveSearchService rightMoveSearchService;
@@ -26,8 +33,10 @@ public class HomeController {
     private ZooplaSearchService zooplaMoveSearchService;
 
     @GetMapping("/")
-    public String get() {
-        return "home";
+    public ModelAndView get() {
+        ModelAndView modelAndView = new ModelAndView("home");
+        modelAndView.addObject("schools", SCHOOLS.values());
+        return modelAndView;
     }
 
     @PostMapping("/search")
@@ -37,6 +46,7 @@ public class HomeController {
         propertyInfos.addAll(zooplaMoveSearchService.search(searchParameters));
         propertyInfos.sort(Comparator.comparing(PropertyInfo::getDateAdded).reversed());
         modelAndView.addObject("propertyInfoList", propertyInfos);
+        modelAndView.addObject("school", SCHOOLS.get(searchParameters.getSchoolId()));
         return modelAndView;
     }
 

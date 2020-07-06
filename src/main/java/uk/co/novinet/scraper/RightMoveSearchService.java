@@ -16,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static uk.co.novinet.scraper.rest.HomeController.SCHOOLS;
+
 @Service
 public class RightMoveSearchService implements SearchService {
 
@@ -27,8 +29,8 @@ public class RightMoveSearchService implements SearchService {
 
     public List<PropertyInfo> search(SearchParameters searchParameters) throws IOException {
         List<URI> propertyPageLinks = findPropertyPageLinks(searchParameters);
-        return propertyPageLinks.stream().map(this::findPropertyInfo).filter(propertyInfo ->
-                propertyInfo.getDistanceToGraveneySchoolMeters() < searchParameters.getMaximumDistanceToGraveneySchool()).sorted((propertyInfo1, propertyInfo2) -> propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded())).collect(Collectors.toList());
+        return propertyPageLinks.stream().map((URI propertyPageUri) -> findPropertyInfo(propertyPageUri, searchParameters)).filter(propertyInfo ->
+                propertyInfo.getDistanceToSchoolMeters() < searchParameters.getMaximumDistanceToSchool()).sorted((propertyInfo1, propertyInfo2) -> propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded())).collect(Collectors.toList());
     }
 
     private static List<URI> findPropertyPageLinks(SearchParameters searchParameters) throws IOException {
@@ -37,7 +39,7 @@ public class RightMoveSearchService implements SearchService {
         return doc.select(".propertyCard-link").stream().filter(element -> !"".equals(element.attr("href").trim())).map(element -> URI.create(BASE_URL + element.attr("href"))).distinct().collect(Collectors.toList());
     }
 
-    private PropertyInfo findPropertyInfo(URI propertyPageUri) {
+    private PropertyInfo findPropertyInfo(URI propertyPageUri, SearchParameters searchParameters) {
         try {
             Document propertyInfoPage = Jsoup.connect(propertyPageUri.toString()).userAgent(USER_AGENT).get();
 
@@ -59,8 +61,8 @@ public class RightMoveSearchService implements SearchService {
                     propertyInfoPage.select("h1.fs-22").textNodes().get(0).toString().trim(),
                     propertyPageUri.toString(),
                     distanceBetween(
-                            GRAVENEY_LATITUDE,
-                            GRAVENEY_LONGITUDE,
+                            SCHOOLS.get(searchParameters.getSchoolId()).getLatitude(),
+                            SCHOOLS.get(searchParameters.getSchoolId()).getLongitude(),
                             location.getLatitude(),
                             location.getLongitude()
                             ),

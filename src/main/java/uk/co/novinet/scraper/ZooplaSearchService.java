@@ -18,6 +18,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static uk.co.novinet.scraper.rest.HomeController.SCHOOLS;
+
 @Service
 public class ZooplaSearchService implements SearchService {
 
@@ -28,9 +30,12 @@ public class ZooplaSearchService implements SearchService {
     private static final Pattern PATTERN_LOCATION = Pattern.compile("\"coordinates\": \\{\"is_approximate\":false,\"latitude\":(?<latitude>[-+]?[0-9]*\\.?[0-9]+),\"longitude\":(?<longitude>[-+]?[0-9]*\\.?[0-9]+)\\}");
 
     public List<PropertyInfo> search(SearchParameters searchParameters) throws IOException {
-        List<URI> propertyPageLinks = findPropertyPageLinks(searchParameters);
-        return propertyPageLinks.stream().map(this::findPropertyInfo).filter(propertyInfo ->
-                propertyInfo.getDistanceToGraveneySchoolMeters() < searchParameters.getMaximumDistanceToGraveneySchool()).sorted((propertyInfo1, propertyInfo2) -> propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded())).collect(Collectors.toList());
+        return findPropertyPageLinks(searchParameters).stream().map((URI propertyPageUri) ->
+                findPropertyInfo(propertyPageUri, searchParameters)).filter(propertyInfo ->
+                    propertyInfo.getDistanceToSchoolMeters() < searchParameters.getMaximumDistanceToSchool())
+                .sorted((propertyInfo1, propertyInfo2) ->
+                        propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded()))
+                .collect(Collectors.toList());
     }
 
     private static List<URI> findPropertyPageLinks(SearchParameters searchParameters) throws IOException {
@@ -40,15 +45,13 @@ public class ZooplaSearchService implements SearchService {
         return uris;
     }
 
-    private PropertyInfo findPropertyInfo(URI propertyPageUri) {
+    private PropertyInfo findPropertyInfo(URI propertyPageUri, SearchParameters searchParameters) {
         try {
             Document propertyInfoPage = Jsoup.connect(propertyPageUri.toString()).userAgent(USER_AGENT).get();
 
             Elements scriptElements = propertyInfoPage.select("script");
 
-            Location location = scriptElements.stream().filter(element -> {
-                return PATTERN_LOCATION.matcher(element.outerHtml()).find();
-            }).map(element -> {
+            Location location = scriptElements.stream().filter(element -> PATTERN_LOCATION.matcher(element.outerHtml()).find()).map(element -> {
                 Matcher matcher = PATTERN_LOCATION.matcher(element.outerHtml());
                 if (matcher.find()) {
                     return new Location(
@@ -69,8 +72,8 @@ public class ZooplaSearchService implements SearchService {
                     propertyInfoPage.select("article.dp-sidebar-wrapper__summary .ui-property-summary__title.ui-title-subgroup").textNodes().get(0).toString().trim(),
                     propertyPageUri.toString(),
                     distanceBetween(
-                            GRAVENEY_LATITUDE,
-                            GRAVENEY_LONGITUDE,
+                            SCHOOLS.get(searchParameters.getSchoolId()).getLatitude(),
+                            SCHOOLS.get(searchParameters.getSchoolId()).getLongitude(),
                             location.getLatitude(),
                             location.getLongitude()
                     ),
