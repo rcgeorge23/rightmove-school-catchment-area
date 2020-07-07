@@ -1,5 +1,6 @@
 package uk.co.novinet.scraper;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
@@ -18,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.ObjectUtils.compare;
 import static uk.co.novinet.scraper.rest.HomeController.SCHOOLS;
 
 @Service
@@ -34,7 +36,7 @@ public class ZooplaSearchService implements SearchService {
                 findPropertyInfo(propertyPageUri, searchParameters)).filter(propertyInfo ->
                     propertyInfo.getDistanceToSchoolMeters() < searchParameters.getMaximumDistanceToSchool())
                 .sorted((propertyInfo1, propertyInfo2) ->
-                        propertyInfo2.getDateAdded().compareTo(propertyInfo1.getDateAdded()))
+                        compare(propertyInfo2.getDateAdded(), propertyInfo1.getDateAdded()))
                 .collect(Collectors.toList());
     }
 

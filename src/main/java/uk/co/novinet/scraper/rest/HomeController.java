@@ -1,6 +1,7 @@
 package uk.co.novinet.scraper.rest;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @Slf4j
@@ -44,7 +46,8 @@ public class HomeController {
         ModelAndView modelAndView = new ModelAndView("searchResults");
         List<PropertyInfo> propertyInfos = rightMoveSearchService.search(searchParameters);
         propertyInfos.addAll(zooplaMoveSearchService.search(searchParameters));
-        propertyInfos.sort(Comparator.comparing(PropertyInfo::getDateAdded).reversed());
+        propertyInfos = propertyInfos.stream()
+                .sorted(Comparator.comparing(PropertyInfo::getDateAdded, Comparator.nullsLast(Comparator.reverseOrder()))).collect(Collectors.toList());
         modelAndView.addObject("propertyInfoList", propertyInfos);
         modelAndView.addObject("school", SCHOOLS.get(searchParameters.getSchoolId()));
         return modelAndView;
